@@ -1,0 +1,75 @@
+create database childmortality;
+use childmortality;
+create table childmortality(serialno int,	Country	varchar(200),Years varchar(200),	Gender varchar(200),	ChildMortality int,	TotalPopulation int,
+MortalityRate varchar(200));
+
+
+/*Show countries according to mortality rate over the years and total mortality */
+select  country, round(avg(mortalityrate),2) as avgmortalityrate, sum(childmortality) as mortalityoveryears,
+rank() over(order by round(avg(mortalityrate),2) desc) as ranking
+ from childmortality group by country limit 10 ;
+ 
+ 
+ /*show global mortality rate gender wise */
+ select distinct gender,round(avg(mortalityrate),2) as mortalityrate from childmortality group by gender;
+ 
+ /*show genderwise mortality in countries*/
+ select ifnull(country,"total") as country,ifnull(gender,"sub-total") as gender ,round(avg(mortalityrate),2) as avgmortalityrate  from childmortality 
+ where country is not null 
+ group by country,gender with rollup  ;
+ /*yearwise mortality rate*/
+ select years,round(avg(mortalityrate),2) as avgmortalityrate from childmortality group by years order by round(avg(mortalityrate),2) desc;
+ 
+ /* ranking of countries based on mortality rate for  females */
+ select country,round(avg(mortalityrate),2) as mortalityrate_females, rank()over(order by round(avg(mortalityrate),2) desc) as ranking
+ from childmortality where gender="Female" group by country limit 10;
+ 
+ /* ranking of countries based on mortality rate for  males */
+  select country,round(avg(mortalityrate),2) as mortalityrate_males, rank()over(order by round(avg(mortalityrate),2) desc) as ranking
+ from childmortality where gender="male" group by country limit 10;
+ 
+/*show mortality rate,total population,childmortality over the years*/
+select years,sum(childmortality) as totalchildmortality,sum(totalpopulation) as totalpopulation,
+round(avg(mortalityrate),2) as avgchildmortality from childmortality 
+group by years order by years desc;
+
+/*show average child mortality over the years for both genders */
+select years,gender,round(avg(mortalityrate),2) as avgmortalityrate from childmortality
+group by years,gender  order by years  ;
+
+
+ 
+/*ranking coutries according to child mortality rates*/
+ select country,round(avg(mortalityrate),2),
+ rank() over(order by round(avg(mortalityrate),2) desc) as 
+ ranking from childmortality group by country;
+ 
+ /*india's analysis*/
+/*1*/ select *from (select country,round(avg(mortalityrate),2) as childmortalityrate,
+ rank() over(order by round(avg(mortalityrate),2) desc) as 
+ ranking from childmortality group by country ) as ranktable where country="India" ;
+ 
+/*India's ranking according to mortality rate in 2019*/
+ select *from (select country,round(mortalityrate,2) as mortalityrate,rank() over(order by round(mortalityrate,2) desc) as rnk from childmortality 
+ where years=2019 group by country) as ranktable where country="India" ;
+ 
+/*India's ranking according to absolute child mortality*/
+ select *from (select country,childmortality,round(mortalityrate,2) as mortalityrate,
+ rank() over(order by childmortality desc) as rnk from childmortality 
+ where years=2019 group by country) as ranktable where country="India" ;
+ 
+/*ranking of countries based on 2019 child mortality rate*/
+ select * from (select country,round(mortalityrate,2)as mortalityrate,rank() over(order by round(mortalityrate,2) desc) as rnk_2019 from childmortality 
+ where years=2019 group by country) as rnktable where rnk_2019<11;
+
+ 
+  select  gender,round(avg(mortalityrate),2) as childmortalityrate_India from childmortality where country="India"
+ group by gender;
+ /*we get to know genderwise mortality rate for India*/
+ 
+ 
+select years ,round(avg(mortalityrate),2) as childmortalityrate from childmortality where country="India" group by years;
+ /*we get to know trend of childmrtality over the years in india*/
+ 
+ /*4*/ select years,ifnull(gender,"average") as gender ,round(avg(mortalityrate),2) as childmortalityrate
+ from childmortality where country="India" group by years,gender with rollup;/*gives trend over the years across genders*/
